@@ -1,22 +1,59 @@
 # TransPilot
 
-TransPilot is a Flutter mobile client for managing remote Transmission servers over the Transmission RPC API. It supports multiple saved server profiles, secure credential storage, adaptive phone/tablet layouts, session-aware RPC retries, torrent grouping, and live session controls for Android and iOS.
+![Flutter](https://img.shields.io/badge/Flutter-Mobile%20App-47C5FB?style=for-the-badge&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)
+![Riverpod](https://img.shields.io/badge/Riverpod-State%20Management-4F46E5?style=for-the-badge)
+![Transmission RPC](https://img.shields.io/badge/Transmission-RPC-2F855A?style=for-the-badge)
+![Android](https://img.shields.io/badge/Android-Supported-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![iOS](https://img.shields.io/badge/iOS-Supported-111827?style=for-the-badge&logo=apple&logoColor=white)
 
-## Features
+> This project was 100% created using Codex AI.
+
+TransPilot is a production-minded Flutter mobile client for managing remote Transmission servers through the Transmission RPC API. It supports multiple saved servers, secure credential storage, adaptive phone and tablet layouts, session-aware RPC retry handling, torrent grouping, and live session controls on Android and iOS.
+
+## ✨ Highlights
+
+- Multi-server profile management with secure credential storage
+- Automatic `X-Transmission-Session-Id` negotiation and retry handling
+- Adaptive UI for phones, tablets, portrait, and landscape
+- Torrent search, filter, sort, grouping, detail view, and actions
+- Add torrent via magnet link, `.torrent` file, or clipboard
+- Session dashboard and editable server/session settings
+- Unit tests for RPC behavior, DTO mapping, grouping, filtering, and controller logic
+
+## 🧩 Feature Set
+
+### 📡 Connectivity
 
 - Multiple saved Transmission server profiles
-- Secure username/password storage with `flutter_secure_storage`
-- Automatic `X-Transmission-Session-Id` negotiation and retry handling
-- Basic auth, timeout, unreachable host, malformed endpoint, and bad certificate error handling
-- Torrent list with search, filter, sort, pull-to-refresh, and periodic refresh
-- Grouping by download path or tracker with persisted collapse state
-- Adaptive layouts for phones, tablets, portrait, and landscape
-- Torrent detail view with files, trackers, peers, transfer stats, dates, and actions
-- Add torrent flow for magnet links, `.torrent` files, and clipboard paste
-- Session dashboard and editable server/session settings
-- Unit tests for RPC behavior, DTO mapping, grouping, sorting/filtering, controller flow, and adaptive layout logic
+- Secure username/password storage via `flutter_secure_storage`
+- HTTP basic auth support
+- Graceful handling for invalid credentials, timeouts, malformed endpoints, unreachable hosts, and certificate issues
 
-## Project Structure
+### 📋 Torrent Management
+
+- Search torrents by name, path, or tracker
+- Filter by status
+- Sort by name, progress, added date, download speed, and upload speed
+- Group by flat list, download path, or tracker
+- Pull-to-refresh and periodic refresh
+- Start, start now, pause, verify, reannounce, remove, and remove data
+- Queue movement, rename path, move data, and bandwidth priority changes
+
+### 🔎 Detail View
+
+- General torrent info
+- Files with wanted/unwanted toggle and per-file priority
+- Trackers and peers
+- Transfer stats, dates, and error messages
+
+### ⚙️ Session Control
+
+- View session summary and lifetime stats
+- Update supported session settings
+- View free space and alternative speed mode state
+
+## 🏗️ Project Structure
 
 ```text
 lib/
@@ -48,24 +85,24 @@ test/
   shared/
 ```
 
-## Architecture
+## 🧠 Architecture
 
-TransPilot uses a small clean architecture split:
+TransPilot follows a compact clean architecture:
 
-- `core`: shared theme, app-level errors, formatting helpers, and layout breakpoints
-- `data`: Transmission RPC transport, DTO parsing, preference/profile persistence, and repository implementations
-- `domain`: app entities and repository contracts
-- `presentation`: Riverpod controllers, adaptive screens, and end-user flows
-- `shared`: reusable list/grouping logic and UI building blocks
+- `core`: shared theme, errors, formatting helpers, breakpoints, and app infrastructure
+- `data`: Transmission RPC transport, DTO parsing, persistence, and repository implementations
+- `domain`: entities and repository contracts
+- `presentation`: Riverpod controllers, screens, and adaptive UI flows
+- `shared`: reusable business logic and UI building blocks
 
-The RPC layer centralizes Transmission-specific behavior, especially session-id refresh and retry after `409 Conflict`. UI state is driven through Riverpod `StateNotifier` controllers for profiles, preferences, torrent lists, details, and dashboard/session data.
+The RPC layer centralizes Transmission-specific behavior, especially session refresh and retry after `409 Conflict`. UI state is driven through Riverpod `StateNotifier` controllers for profiles, preferences, torrents, details, and dashboard/session data.
 
-## Setup
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - Flutter stable
-- Android Studio or Xcode for device/simulator builds
+- Android Studio or Xcode
 - A reachable Transmission RPC server
 
 ### Install dependencies
@@ -86,7 +123,7 @@ flutter run -d android
 flutter run -d ios
 ```
 
-If CocoaPods has not been initialized on the machine yet, run:
+If CocoaPods is not initialized yet:
 
 ```bash
 cd ios
@@ -94,7 +131,7 @@ pod install
 cd ..
 ```
 
-## Test and Verify
+## ✅ Verification
 
 Run static analysis:
 
@@ -102,39 +139,42 @@ Run static analysis:
 dart analyze
 ```
 
-Run the test suite:
+Run tests:
 
 ```bash
 flutter test
 ```
 
-## Using the App
+## 📱 Usage Flow
 
 1. Open `Servers` and add a Transmission server profile.
-2. Save the profile after the built-in connection test succeeds.
-3. Select the server as active if it is not already active.
-4. Use `Torrents` to search, sort, filter, group, inspect, and act on torrents.
-5. Use `Dashboard` for live transfer and session summary data.
-6. Use `Settings` to change app preferences and Transmission session settings.
+2. Test the connection and save the profile.
+3. Set the server as active.
+4. Open `Torrents` to browse, group, sort, and manage torrents.
+5. Open `Dashboard` for session and transfer overview.
+6. Open `Settings` for app preferences and session settings.
 
-## Platform Notes
+## 📝 Platform Notes
 
-- Credentials are stored in Android encrypted shared preferences / iOS Keychain through `flutter_secure_storage`.
-- Self-signed or otherwise invalid TLS certificates are surfaced as errors. This version does not include a certificate bypass or pinning UI.
-- Torrent file content pre-selection before upload is not implemented yet; the add flow supports magnet links, `.torrent` files, destination selection, pause-on-add, and bandwidth priority.
-- The files section is a flat list instead of a nested directory tree. File wanted/unwanted and per-file priority actions are implemented.
+- Credentials are stored using Android encrypted shared preferences and iOS Keychain through `flutter_secure_storage`.
+- Invalid or self-signed TLS certificates are surfaced as errors. This build does not provide a certificate bypass or pinning UI.
+- Torrent pre-selection from `.torrent` contents before upload is not implemented yet.
+- The files section is currently a flat list instead of a nested directory tree.
 
-## Key Implementation Notes
+## 🔧 Implementation Notes
 
-- Tracker grouping uses a deterministic primary tracker rule: lowest tracker tier first, then tracker id, normalized to host/domain when possible.
-- Download-path grouping prefers the torrent-level `downloadDir`; missing values fall back to `Unknown Path`.
+- Tracker grouping uses a deterministic primary tracker rule: lowest tier first, then tracker id, normalized to host/domain where possible.
+- Download-path grouping prefers torrent-level `downloadDir`; missing values fall back to `Unknown Path`.
 - Refresh timers are owned by Riverpod controllers and are cancelled on disposal or active-profile changes.
-- Grouping, sorting, filter, density, theme, refresh interval, and collapse preferences are persisted locally.
+- Grouping, sorting, filter, theme, refresh interval, and collapse preferences are persisted locally.
 
-## Current Status
+## 📊 Current Status
 
 The repository currently passes:
 
 - `dart analyze`
 - `flutter test`
-"# transpilot" 
+
+## 🤖 Credits
+
+This project was fully created using Codex AI.
