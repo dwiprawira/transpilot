@@ -29,6 +29,9 @@ class TransmissionRpcClient {
       adapter.createHttpClient = () {
         final client = HttpClient();
         client.connectionTimeout = const Duration(seconds: 10);
+        if (profile.allowInvalidCertificate) {
+          client.badCertificateCallback = (_, _, _) => true;
+        }
         return client;
       };
       _dio.httpClientAdapter = adapter;

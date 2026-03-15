@@ -25,6 +25,7 @@ void main() {
         port: 9091,
         rpcPath: '/transmission/rpc',
         useHttps: false,
+        allowInvalidCertificate: false,
         username: '',
         password: '',
       );

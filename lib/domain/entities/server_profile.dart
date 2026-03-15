@@ -8,6 +8,7 @@ class ServerProfile {
     required this.port,
     required this.rpcPath,
     required this.useHttps,
+    required this.allowInvalidCertificate,
     required this.username,
     required this.password,
   });
@@ -18,6 +19,7 @@ class ServerProfile {
   final int port;
   final String rpcPath;
   final bool useHttps;
+  final bool allowInvalidCertificate;
   final String username;
   final String password;
 
@@ -40,6 +42,7 @@ class ServerProfile {
     int? port,
     String? rpcPath,
     bool? useHttps,
+    bool? allowInvalidCertificate,
     String? username,
     String? password,
   }) {
@@ -50,6 +53,8 @@ class ServerProfile {
       port: port ?? this.port,
       rpcPath: rpcPath ?? this.rpcPath,
       useHttps: useHttps ?? this.useHttps,
+      allowInvalidCertificate:
+          allowInvalidCertificate ?? this.allowInvalidCertificate,
       username: username ?? this.username,
       password: password ?? this.password,
     );
@@ -63,6 +68,7 @@ class ServerProfile {
       'port': port,
       'rpcPath': rpcPath,
       'useHttps': useHttps,
+      'allowInvalidCertificate': allowInvalidCertificate,
     };
   }
 
@@ -82,6 +88,8 @@ class ServerProfile {
       port: metadata['port'] as int? ?? 9091,
       rpcPath: metadata['rpcPath'] as String? ?? '/transmission/rpc',
       useHttps: metadata['useHttps'] as bool? ?? false,
+      allowInvalidCertificate:
+          metadata['allowInvalidCertificate'] as bool? ?? false,
       username: credentials['username'] as String? ?? '',
       password: credentials['password'] as String? ?? '',
     );

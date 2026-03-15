@@ -1,5 +1,9 @@
 # TransPilot
 
+<p align="center">
+  <img src="icon.png" alt="TransPilot icon" width="140" />
+</p>
+
 ![Flutter](https://img.shields.io/badge/Flutter-Mobile%20App-47C5FB?style=for-the-badge&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)
 ![Riverpod](https://img.shields.io/badge/Riverpod-State%20Management-4F46E5?style=for-the-badge)
@@ -28,6 +32,7 @@ TransPilot is a production-minded Flutter mobile client for managing remote Tran
 - Multiple saved Transmission server profiles
 - Secure username/password storage via `flutter_secure_storage`
 - HTTP basic auth support
+- Optional per-server allowance for self-signed or otherwise invalid TLS certificates
 - Graceful handling for invalid credentials, timeouts, malformed endpoints, unreachable hosts, and certificate issues
 
 ### 📋 Torrent Management
@@ -162,7 +167,7 @@ flutter test
 - Credentials are stored using Android encrypted shared preferences and iOS Keychain through `flutter_secure_storage`.
 - Android registers `application/x-bittorrent` files and the `magnet:` scheme so supported apps can hand torrents directly to TransPilot.
 - iOS registers `.torrent` documents and the `magnet:` URL scheme so the add torrent sheet can be opened from Files and compatible browsers/apps.
-- Invalid or self-signed TLS certificates are surfaced as errors. This build does not provide a certificate bypass or pinning UI.
+- HTTPS connections can optionally allow invalid or self-signed certificates on a per-server basis. Leave this disabled unless you trust the server and network.
 - Torrent pre-selection from `.torrent` contents before upload is not implemented yet.
 - The files section is currently a flat list instead of a nested directory tree.
 
@@ -172,6 +177,7 @@ flutter test
 - Download-path grouping prefers torrent-level `downloadDir`; missing values fall back to `Unknown Path`.
 - Refresh timers are owned by Riverpod controllers and are cancelled on disposal or active-profile changes.
 - Grouping, sorting, filter, theme, refresh interval, and collapse preferences are persisted locally.
+- Launcher icons are generated from `icon.png` via [generate_launcher_icons.ps1](/Users/dwiprawira/Development/SourceCode/Flutter/transpilot/tooling/generate_launcher_icons.ps1) or [generate_launcher_icons.sh](/Users/dwiprawira/Development/SourceCode/Flutter/transpilot/tooling/generate_launcher_icons.sh).
 
 ## 📊 Current Status
 

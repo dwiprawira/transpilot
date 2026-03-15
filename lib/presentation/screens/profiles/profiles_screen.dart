@@ -90,7 +90,9 @@ class ProfilesScreen extends ConsumerWidget {
                                   icon: Icons.verified_user_outlined,
                                   label: 'TLS',
                                   value: profile.useHttps
-                                      ? 'Enabled, valid certificate required'
+                                      ? (profile.allowInvalidCertificate
+                                            ? 'Enabled, invalid certificates allowed'
+                                            : 'Enabled, valid certificate required')
                                       : 'Disabled',
                                 ),
                                 const SizedBox(height: 16),
@@ -258,6 +260,7 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
   bool _useHttps = false;
+  bool _allowInvalidCertificate = false;
   bool _isSaving = false;
 
   @override
@@ -273,6 +276,7 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
     _usernameController = TextEditingController(text: profile?.username ?? '');
     _passwordController = TextEditingController(text: profile?.password ?? '');
     _useHttps = profile?.useHttps ?? false;
+    _allowInvalidCertificate = profile?.allowInvalidCertificate ?? false;
   }
 
   @override
@@ -294,6 +298,7 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
       port: int.tryParse(_portController.text.trim()) ?? 9091,
       rpcPath: _rpcPathController.text.trim(),
       useHttps: _useHttps,
+      allowInvalidCertificate: _allowInvalidCertificate,
       username: _usernameController.text.trim(),
       password: _passwordController.text,
     );
@@ -369,8 +374,12 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
                           subtitle: const Text(
                             'Requires a trusted certificate.',
                           ),
-                          onChanged: (value) =>
-                              setState(() => _useHttps = value),
+                          onChanged: (value) => setState(() {
+                            _useHttps = value;
+                            if (!value) {
+                              _allowInvalidCertificate = false;
+                            }
+                          }),
                         ),
                       ],
                     ),
@@ -384,7 +393,23 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
                           : null,
                     ),
                     const SizedBox(height: 12),
-                    _TlsNotice(useHttps: _useHttps),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      value: _allowInvalidCertificate,
+                      title: const Text('Allow invalid certificate'),
+                      subtitle: const Text(
+                        'Accept self-signed or otherwise untrusted TLS certificates.',
+                      ),
+                      onChanged: _useHttps
+                          ? (value) =>
+                                setState(() => _allowInvalidCertificate = value)
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    _TlsNotice(
+                      useHttps: _useHttps,
+                      allowInvalidCertificate: _allowInvalidCertificate,
+                    ),
                   ],
                 ),
               ),
@@ -591,9 +616,13 @@ class _ProfileResponsiveFields extends StatelessWidget {
 }
 
 class _TlsNotice extends StatelessWidget {
-  const _TlsNotice({required this.useHttps});
+  const _TlsNotice({
+    required this.useHttps,
+    required this.allowInvalidCertificate,
+  });
 
   final bool useHttps;
+  final bool allowInvalidCertificate;
 
   @override
   Widget build(BuildContext context) {
@@ -616,7 +645,9 @@ class _TlsNotice extends StatelessWidget {
             Expanded(
               child: Text(
                 useHttps
-                    ? 'Self-signed certificates are not trusted by this build. Use a certificate from a trusted CA, or switch to HTTP only if your network is private and you accept the risk.'
+                    ? (allowInvalidCertificate
+                          ? 'Invalid TLS certificates will be accepted for this server. Use this only when you trust the server and network.'
+                          : 'Only certificates trusted by the device will be accepted. Enable the option above if you need to connect to a self-signed server.')
                     : 'HTTP avoids certificate validation entirely, but traffic is unencrypted. Only use it on a network you trust.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onSecondaryContainer,
