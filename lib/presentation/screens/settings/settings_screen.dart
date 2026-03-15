@@ -15,128 +15,146 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final width = MediaQuery.sizeOf(context).width;
     final preferences =
         ref.watch(preferencesControllerProvider).valueOrNull ??
         AppPreferences.defaults();
     final dashboard = ref.watch(dashboardControllerProvider);
 
+    final horizontalPadding = AppLayout.horizontalPadding(width);
+
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
+        16,
+        horizontalPadding,
+        24,
+      ),
       children: [
-        SectionCard(
-          title: 'App Preferences',
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: [
-              SizedBox(
-                width: 220,
-                child: DropdownButtonFormField<ThemeMode>(
-                  initialValue: preferences.themeMode,
-                  decoration: const InputDecoration(labelText: 'Theme'),
-                  items: ThemeMode.values
-                      .map(
-                        (value) => DropdownMenuItem(
-                          value: value,
-                          child: Text(value.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref
-                          .read(preferencesControllerProvider.notifier)
-                          .updateThemeMode(value);
-                    }
-                  },
-                ),
-              ),
-              SizedBox(
-                width: 220,
-                child: DropdownButtonFormField<int>(
-                  initialValue: preferences.refreshInterval.inSeconds,
-                  decoration: const InputDecoration(
-                    labelText: 'Refresh interval',
-                  ),
-                  items: const [5, 10, 15, 30, 60]
-                      .map(
-                        (value) => DropdownMenuItem(
-                          value: value,
-                          child: Text('$value seconds'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref
-                          .read(preferencesControllerProvider.notifier)
-                          .updateRefreshInterval(Duration(seconds: value));
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (!dashboard.isConfigured)
-          const EmptyState(
-            icon: Icons.dns_rounded,
-            title: 'No active server',
-            message:
-                'Select a server profile to edit live Transmission session settings.',
-          )
-        else ...[
-          SectionCard(
-            title: 'Session Settings',
-            trailing: FilledButton.tonalIcon(
-              onPressed: dashboard.sessionInfo == null
-                  ? null
-                  : () => _openSessionDialog(context, dashboard.sessionInfo!),
-              icon: const Icon(Icons.tune_rounded),
-              label: const Text('Edit'),
-            ),
-            child: Wrap(
-              spacing: 24,
-              runSpacing: 16,
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1120),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _SettingValue(
-                  label: 'Download directory',
-                  value: dashboard.sessionInfo?.downloadDir ?? 'Unknown',
-                ),
-                _SettingValue(
-                  label: 'Download limit',
-                  value: dashboard.sessionInfo?.speedLimitDownEnabled ?? false
-                      ? '${dashboard.sessionInfo?.speedLimitDown ?? 0} KB/s'
-                      : 'Unlimited',
-                ),
-                _SettingValue(
-                  label: 'Upload limit',
-                  value: dashboard.sessionInfo?.speedLimitUpEnabled ?? false
-                      ? '${dashboard.sessionInfo?.speedLimitUp ?? 0} KB/s'
-                      : 'Unlimited',
-                ),
-                _SettingValue(
-                  label: 'Encryption',
-                  value:
-                      dashboard.sessionInfo?.encryptionMode.name ?? 'Unknown',
-                ),
-                _SettingValue(
-                  label: 'Alternative speed',
-                  value: dashboard.sessionInfo?.altSpeedEnabled ?? false
-                      ? 'Enabled'
-                      : 'Disabled',
-                ),
-                _SettingValue(
-                  label: 'Free space',
-                  value: Formatters.bytes(
-                    dashboard.freeSpaceInfo?.sizeBytes ?? 0,
+                SectionCard(
+                  title: 'App Preferences',
+                  child: _ResponsiveFields(
+                    children: [
+                      DropdownButtonFormField<ThemeMode>(
+                        initialValue: preferences.themeMode,
+                        decoration: const InputDecoration(labelText: 'Theme'),
+                        items: ThemeMode.values
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            ref
+                                .read(preferencesControllerProvider.notifier)
+                                .updateThemeMode(value);
+                          }
+                        },
+                      ),
+                      DropdownButtonFormField<int>(
+                        initialValue: preferences.refreshInterval.inSeconds,
+                        decoration: const InputDecoration(
+                          labelText: 'Refresh interval',
+                        ),
+                        items: const [5, 10, 15, 30, 60]
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text('$value seconds'),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            ref
+                                .read(preferencesControllerProvider.notifier)
+                                .updateRefreshInterval(
+                                  Duration(seconds: value),
+                                );
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 16),
+                if (!dashboard.isConfigured)
+                  const EmptyState(
+                    icon: Icons.dns_rounded,
+                    title: 'No active server',
+                    message:
+                        'Select a server profile to edit live Transmission session settings.',
+                  )
+                else
+                  SectionCard(
+                    title: 'Session Settings',
+                    trailing: FilledButton.tonalIcon(
+                      onPressed: dashboard.sessionInfo == null
+                          ? null
+                          : () => _openSessionDialog(
+                              context,
+                              dashboard.sessionInfo!,
+                            ),
+                      icon: const Icon(Icons.tune_rounded),
+                      label: const Text('Edit'),
+                    ),
+                    child: _ResponsiveSettingValues(
+                      children: [
+                        _SettingValue(
+                          label: 'Download directory',
+                          value:
+                              dashboard.sessionInfo?.downloadDir ?? 'Unknown',
+                        ),
+                        _SettingValue(
+                          label: 'Download limit',
+                          value:
+                              dashboard.sessionInfo?.speedLimitDownEnabled ??
+                                  false
+                              ? '${dashboard.sessionInfo?.speedLimitDown ?? 0} KB/s'
+                              : 'Unlimited',
+                        ),
+                        _SettingValue(
+                          label: 'Upload limit',
+                          value:
+                              dashboard.sessionInfo?.speedLimitUpEnabled ??
+                                  false
+                              ? '${dashboard.sessionInfo?.speedLimitUp ?? 0} KB/s'
+                              : 'Unlimited',
+                        ),
+                        _SettingValue(
+                          label: 'Encryption',
+                          value:
+                              dashboard.sessionInfo?.encryptionMode.name ??
+                              'Unknown',
+                        ),
+                        _SettingValue(
+                          label: 'Alternative speed',
+                          value: dashboard.sessionInfo?.altSpeedEnabled ?? false
+                              ? 'Enabled'
+                              : 'Disabled',
+                        ),
+                        _SettingValue(
+                          label: 'Free space',
+                          value: Formatters.bytes(
+                            dashboard.freeSpaceInfo?.sizeBytes ?? 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
-        ],
+        ),
       ],
     );
   }
@@ -252,6 +270,9 @@ class _SessionSettingsFormState extends ConsumerState<SessionSettingsForm> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width >= 720;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -265,132 +286,187 @@ class _SessionSettingsFormState extends ConsumerState<SessionSettingsForm> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _downloadDirController,
-                decoration: const InputDecoration(
-                  labelText: 'Default download directory',
-                ),
-                validator: (value) =>
-                    (value == null || value.trim().isEmpty) ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<EncryptionMode>(
-                initialValue: _encryptionMode,
-                decoration: const InputDecoration(labelText: 'Encryption mode'),
-                items: EncryptionMode.values
-                    .map(
-                      (value) => DropdownMenuItem(
-                        value: value,
-                        child: Text(value.name),
+              _FormSection(
+                title: 'Storage',
+                description:
+                    'Choose the default download path and transport policy.',
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _downloadDirController,
+                      decoration: const InputDecoration(
+                        labelText: 'Default download directory',
                       ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _encryptionMode = value);
-                  }
-                },
+                      validator: (value) =>
+                          (value == null || value.trim().isEmpty)
+                          ? 'Required'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<EncryptionMode>(
+                      initialValue: _encryptionMode,
+                      decoration: const InputDecoration(
+                        labelText: 'Encryption mode',
+                      ),
+                      items: EncryptionMode.values
+                          .map(
+                            (value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(value.name),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _encryptionMode = value);
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              _SwitchTile(
-                title: 'Alternative speed mode',
-                value: _altSpeedEnabled,
-                onChanged: (value) => setState(() => _altSpeedEnabled = value),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _altSpeedDownController,
+              const SizedBox(height: 16),
+              _FormSection(
+                title: 'Bandwidth',
+                description: 'Configure standard and alternative speed limits.',
+                child: Column(
+                  children: [
+                    _SwitchTile(
+                      title: 'Alternative speed mode',
+                      subtitle: 'Use separate limits for scheduled throttling.',
+                      value: _altSpeedEnabled,
+                      onChanged: (value) =>
+                          setState(() => _altSpeedEnabled = value),
+                    ),
+                    const SizedBox(height: 12),
+                    _ResponsiveFields(
+                      minChildWidth: isWide ? 200 : 260,
+                      children: [
+                        TextFormField(
+                          controller: _altSpeedDownController,
+                          enabled: _altSpeedEnabled,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Alt download KB/s',
+                          ),
+                        ),
+                        TextFormField(
+                          controller: _altSpeedUpController,
+                          enabled: _altSpeedEnabled,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Alt upload KB/s',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _SwitchTile(
+                      title: 'Enable download speed limit',
+                      subtitle: 'Cap normal download throughput.',
+                      value: _speedLimitDownEnabled,
+                      onChanged: (value) =>
+                          setState(() => _speedLimitDownEnabled = value),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _speedLimitDownController,
+                      enabled: _speedLimitDownEnabled,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Alt download KB/s',
+                        labelText: 'Download limit KB/s',
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _altSpeedUpController,
+                    const SizedBox(height: 12),
+                    _SwitchTile(
+                      title: 'Enable upload speed limit',
+                      subtitle: 'Cap normal upload throughput.',
+                      value: _speedLimitUpEnabled,
+                      onChanged: (value) =>
+                          setState(() => _speedLimitUpEnabled = value),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _speedLimitUpController,
+                      enabled: _speedLimitUpEnabled,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Alt upload KB/s',
+                        labelText: 'Upload limit KB/s',
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _SwitchTile(
-                title: 'Enable download speed limit',
-                value: _speedLimitDownEnabled,
-                onChanged: (value) =>
-                    setState(() => _speedLimitDownEnabled = value),
-              ),
-              TextFormField(
-                controller: _speedLimitDownController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Download limit KB/s',
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              _SwitchTile(
-                title: 'Enable upload speed limit',
-                value: _speedLimitUpEnabled,
-                onChanged: (value) =>
-                    setState(() => _speedLimitUpEnabled = value),
-              ),
-              TextFormField(
-                controller: _speedLimitUpController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Upload limit KB/s',
+              const SizedBox(height: 16),
+              _FormSection(
+                title: 'Queue',
+                description: 'Tune active download and seeding queue behavior.',
+                child: Column(
+                  children: [
+                    _SwitchTile(
+                      title: 'Download queue enabled',
+                      subtitle: 'Limit how many torrents download at once.',
+                      value: _downloadQueueEnabled,
+                      onChanged: (value) =>
+                          setState(() => _downloadQueueEnabled = value),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _downloadQueueSizeController,
+                      enabled: _downloadQueueEnabled,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Download queue size',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SwitchTile(
+                      title: 'Seed queue enabled',
+                      subtitle: 'Limit how many torrents seed at once.',
+                      value: _seedQueueEnabled,
+                      onChanged: (value) =>
+                          setState(() => _seedQueueEnabled = value),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _seedQueueSizeController,
+                      enabled: _seedQueueEnabled,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Seed queue size',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SwitchTile(
+                      title: 'Queue stalled detection',
+                      subtitle: 'Mark torrents as stalled after inactivity.',
+                      value: _queueStalledEnabled,
+                      onChanged: (value) =>
+                          setState(() => _queueStalledEnabled = value),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _queueStalledMinutesController,
+                      enabled: _queueStalledEnabled,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Stalled minutes',
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              _SwitchTile(
-                title: 'Download queue enabled',
-                value: _downloadQueueEnabled,
-                onChanged: (value) =>
-                    setState(() => _downloadQueueEnabled = value),
-              ),
-              TextFormField(
-                controller: _downloadQueueSizeController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Download queue size',
+              const SizedBox(height: 16),
+              _FormSection(
+                title: 'Behavior',
+                description: 'Choose how newly added torrents should start.',
+                child: _SwitchTile(
+                  title: 'Start added torrents automatically',
+                  subtitle: 'Disable this to add torrents in a paused state.',
+                  value: _startAddedTorrents,
+                  onChanged: (value) =>
+                      setState(() => _startAddedTorrents = value),
                 ),
-              ),
-              const SizedBox(height: 12),
-              _SwitchTile(
-                title: 'Seed queue enabled',
-                value: _seedQueueEnabled,
-                onChanged: (value) => setState(() => _seedQueueEnabled = value),
-              ),
-              TextFormField(
-                controller: _seedQueueSizeController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Seed queue size'),
-              ),
-              const SizedBox(height: 12),
-              _SwitchTile(
-                title: 'Queue stalled detection',
-                value: _queueStalledEnabled,
-                onChanged: (value) =>
-                    setState(() => _queueStalledEnabled = value),
-              ),
-              TextFormField(
-                controller: _queueStalledMinutesController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Stalled minutes'),
-              ),
-              const SizedBox(height: 12),
-              _SwitchTile(
-                title: 'Start added torrents automatically',
-                value: _startAddedTorrents,
-                onChanged: (value) =>
-                    setState(() => _startAddedTorrents = value),
               ),
               const SizedBox(height: 20),
               FilledButton.icon(
@@ -444,19 +520,127 @@ class _SwitchTile extends StatelessWidget {
     required this.title,
     required this.value,
     required this.onChanged,
+    this.subtitle,
   });
 
   final String title;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
       contentPadding: EdgeInsets.zero,
       title: Text(title),
+      subtitle: subtitle == null ? null : Text(subtitle!),
       value: value,
       onChanged: onChanged,
+    );
+  }
+}
+
+class _ResponsiveFields extends StatelessWidget {
+  const _ResponsiveFields({required this.children, this.minChildWidth = 240});
+
+  final List<Widget> children;
+  final double minChildWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final useSingleColumn = width < (minChildWidth * 2) + 16;
+
+        if (useSingleColumn) {
+          return Column(
+            children: [
+              for (var index = 0; index < children.length; index++) ...[
+                children[index],
+                if (index < children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        final itemWidth = (width - 16) / 2;
+        return Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          children: [
+            for (final child in children)
+              SizedBox(width: itemWidth, child: child),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ResponsiveSettingValues extends StatelessWidget {
+  const _ResponsiveSettingValues({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = switch (width) {
+          >= 960 => 3,
+          >= 620 => 2,
+          _ => 1,
+        };
+        final spacing = 16.0;
+        final itemWidth = columns == 1
+            ? width
+            : (width - ((columns - 1) * spacing)) / columns;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 16,
+          children: [
+            for (final child in children)
+              SizedBox(width: itemWidth, child: child),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _FormSection extends StatelessWidget {
+  const _FormSection({
+    required this.title,
+    required this.description,
+    required this.child,
+  });
+
+  final String title;
+  final String description;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(description, style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
     );
   }
 }
@@ -469,15 +653,21 @@ class _SettingValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.labelMedium),
-          const SizedBox(height: 4),
-          Text(value, style: Theme.of(context).textTheme.titleMedium),
-        ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: 6),
+            Text(value, style: Theme.of(context).textTheme.titleMedium),
+          ],
+        ),
       ),
     );
   }
