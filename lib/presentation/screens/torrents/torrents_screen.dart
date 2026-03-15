@@ -340,6 +340,7 @@ class _TorrentTile extends ConsumerWidget {
           ? scheme.secondaryContainer.withValues(alpha: 0.18)
           : null,
       child: InkWell(
+        onLongPress: () => _showTorrentQuickActions(context, ref, torrent),
         onTap: () {
           ref
               .read(torrentListControllerProvider.notifier)
@@ -355,10 +356,15 @@ class _TorrentTile extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     actions: [
-                      IconButton(
+                      PopupMenuButton<_TorrentMenuAction>(
                         tooltip: 'Torrent actions',
-                        onPressed: () =>
-                            openTorrentActions(context, ref, torrent),
+                        onSelected: (action) => _handleTorrentMenuAction(
+                          context,
+                          ref,
+                          torrent,
+                          action,
+                        ),
+                        itemBuilder: (context) => _torrentMenuItems(),
                         icon: const Icon(Icons.more_horiz_rounded),
                       ),
                     ],
@@ -480,12 +486,11 @@ class _TorrentTile extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(minHeight: 28, minWidth: 28),
-                splashRadius: 18,
-                onPressed: () => openTorrentActions(context, ref, torrent),
+              PopupMenuButton<_TorrentMenuAction>(
+                tooltip: 'Torrent actions',
+                onSelected: (action) =>
+                    _handleTorrentMenuAction(context, ref, torrent, action),
+                itemBuilder: (context) => _torrentMenuItems(),
                 icon: Icon(
                   Icons.more_horiz_rounded,
                   size: 18,
@@ -498,6 +503,195 @@ class _TorrentTile extends ConsumerWidget {
       ),
     );
   }
+}
+
+enum _TorrentMenuAction {
+  more,
+  moveLocation,
+  deleteTorrent,
+  deleteTorrentAndData,
+}
+
+List<PopupMenuEntry<_TorrentMenuAction>> _torrentMenuItems() {
+  return const [
+    PopupMenuItem<_TorrentMenuAction>(
+      value: _TorrentMenuAction.more,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.tune_rounded),
+        title: Text('More actions'),
+      ),
+    ),
+    PopupMenuItem<_TorrentMenuAction>(
+      value: _TorrentMenuAction.moveLocation,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.folder_open_rounded),
+        title: Text('Move torrent location'),
+      ),
+    ),
+    PopupMenuItem<_TorrentMenuAction>(
+      value: _TorrentMenuAction.deleteTorrent,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.delete_outline_rounded),
+        title: Text('Delete torrent'),
+      ),
+    ),
+    PopupMenuItem<_TorrentMenuAction>(
+      value: _TorrentMenuAction.deleteTorrentAndData,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.delete_forever_rounded),
+        title: Text('Delete torrent + data'),
+      ),
+    ),
+  ];
+}
+
+Future<void> _showTorrentQuickActions(
+  BuildContext context,
+  WidgetRef ref,
+  Torrent torrent,
+) async {
+  await showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.tune_rounded),
+            title: const Text('More actions'),
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              openTorrentActions(context, ref, torrent);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_open_rounded),
+            title: const Text('Move torrent location'),
+            onTap: () async {
+              Navigator.of(sheetContext).pop();
+              await openMoveTorrentLocationDialog(context, ref, torrent);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_outline_rounded),
+            title: const Text('Delete torrent'),
+            onTap: () async {
+              Navigator.of(sheetContext).pop();
+              final delete = await _confirmDeleteChoice(
+                context,
+                torrent,
+                deleteLocalData: false,
+              );
+              if (delete == true && context.mounted) {
+                await confirmRemoveTorrent(
+                  context,
+                  ref,
+                  torrent,
+                  deleteLocalData: false,
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_forever_rounded),
+            title: const Text('Delete torrent + data'),
+            onTap: () async {
+              Navigator.of(sheetContext).pop();
+              final delete = await _confirmDeleteChoice(
+                context,
+                torrent,
+                deleteLocalData: true,
+              );
+              if (delete == true && context.mounted) {
+                await confirmRemoveTorrent(
+                  context,
+                  ref,
+                  torrent,
+                  deleteLocalData: true,
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _handleTorrentMenuAction(
+  BuildContext context,
+  WidgetRef ref,
+  Torrent torrent,
+  _TorrentMenuAction action,
+) async {
+  switch (action) {
+    case _TorrentMenuAction.more:
+      await openTorrentActions(context, ref, torrent);
+      break;
+    case _TorrentMenuAction.moveLocation:
+      await openMoveTorrentLocationDialog(context, ref, torrent);
+      break;
+    case _TorrentMenuAction.deleteTorrent:
+      final confirmed = await _confirmDeleteChoice(
+        context,
+        torrent,
+        deleteLocalData: false,
+      );
+      if (confirmed == true && context.mounted) {
+        await confirmRemoveTorrent(
+          context,
+          ref,
+          torrent,
+          deleteLocalData: false,
+        );
+      }
+      break;
+    case _TorrentMenuAction.deleteTorrentAndData:
+      final confirmed = await _confirmDeleteChoice(
+        context,
+        torrent,
+        deleteLocalData: true,
+      );
+      if (confirmed == true && context.mounted) {
+        await confirmRemoveTorrent(
+          context,
+          ref,
+          torrent,
+          deleteLocalData: true,
+        );
+      }
+      break;
+  }
+}
+
+Future<bool?> _confirmDeleteChoice(
+  BuildContext context,
+  Torrent torrent, {
+  required bool deleteLocalData,
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(
+        deleteLocalData ? 'Delete torrent and data?' : 'Delete torrent?',
+      ),
+      content: Text(torrent.name),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
 }
 
 class _SummaryChip extends StatelessWidget {

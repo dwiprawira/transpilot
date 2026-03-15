@@ -941,43 +941,28 @@ Future<void> openTorrentActions(
             ),
             _ActionButton(
               icon: Icons.folder_open_rounded,
-              label: 'Move Data',
+              label: 'Move Torrent Location',
               onTap: () async {
                 Navigator.of(sheetContext).pop();
-                final value = await _promptForText(
-                  hostContext,
-                  title: 'Move data',
-                  initialValue: torrent.downloadDir ?? '',
-                  label: 'Destination directory',
-                );
-                if (value == null ||
-                    value.trim().isEmpty ||
-                    !hostContext.mounted) {
-                  return;
-                }
-                await _runTorrentAction(
-                  hostContext,
-                  ref,
-                  () => ref
-                      .read(torrentListControllerProvider.notifier)
-                      .performAction(
-                        (repo) => repo.moveData(
-                          ids: [torrent.id],
-                          location: value.trim(),
-                        ),
-                      ),
-                );
+                await openMoveTorrentLocationDialog(hostContext, ref, torrent);
               },
             ),
             _ActionButton(
               icon: Icons.delete_outline_rounded,
-              label: 'Remove',
-              onTap: () => _confirmRemove(sheetContext, hostContext, ref, torrent, false),
+              label: 'Delete Torrent',
+              onTap: () => _confirmRemove(
+                sheetContext,
+                hostContext,
+                ref,
+                torrent,
+                false,
+              ),
             ),
             _ActionButton(
               icon: Icons.delete_forever_rounded,
-              label: 'Remove Data',
-              onTap: () => _confirmRemove(sheetContext, hostContext, ref, torrent, true),
+              label: 'Delete Torrent + Data',
+              onTap: () =>
+                  _confirmRemove(sheetContext, hostContext, ref, torrent, true),
             ),
           ],
         ),
@@ -1021,8 +1006,25 @@ Future<void> _confirmRemove(
   if (!hostContext.mounted) {
     return;
   }
-  await _runTorrentAction(
+  final removed = await confirmRemoveTorrent(
     hostContext,
+    ref,
+    torrent,
+    deleteLocalData: deleteLocalData,
+  );
+  if (removed && hostContext.mounted && Navigator.of(hostContext).canPop()) {
+    Navigator.of(hostContext).pop();
+  }
+}
+
+Future<bool> confirmRemoveTorrent(
+  BuildContext context,
+  WidgetRef ref,
+  Torrent torrent, {
+  required bool deleteLocalData,
+}) async {
+  return _runTorrentAction(
+    context,
     ref,
     () => ref
         .read(torrentListControllerProvider.notifier)
@@ -1030,6 +1032,31 @@ Future<void> _confirmRemove(
           (repo) => repo.removeTorrents([
             torrent.id,
           ], deleteLocalData: deleteLocalData),
+        ),
+  );
+}
+
+Future<void> openMoveTorrentLocationDialog(
+  BuildContext context,
+  WidgetRef ref,
+  Torrent torrent,
+) async {
+  final value = await _promptForText(
+    context,
+    title: 'Move torrent location',
+    initialValue: torrent.downloadDir ?? '',
+    label: 'New destination directory',
+  );
+  if (value == null || value.trim().isEmpty || !context.mounted) {
+    return;
+  }
+  await _runTorrentAction(
+    context,
+    ref,
+    () => ref
+        .read(torrentListControllerProvider.notifier)
+        .performAction(
+          (repo) => repo.moveData(ids: [torrent.id], location: value.trim()),
         ),
   );
 }
@@ -1044,7 +1071,7 @@ Future<void> _dismissSheetAndRunTorrentAction(
   await _runTorrentAction(hostContext, ref, action);
 }
 
-Future<void> _runTorrentAction(
+Future<bool> _runTorrentAction(
   BuildContext context,
   WidgetRef ref,
   Future<void> Function() action,
@@ -1052,21 +1079,23 @@ Future<void> _runTorrentAction(
   try {
     await action();
     if (!context.mounted) {
-      return;
+      return false;
     }
     await ref.read(torrentListControllerProvider.notifier).refresh();
     if (!context.mounted) {
-      return;
+      return false;
     }
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Action completed.')));
+    return true;
   } catch (error) {
     if (context.mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('$error')));
     }
+    return false;
   }
 }
 

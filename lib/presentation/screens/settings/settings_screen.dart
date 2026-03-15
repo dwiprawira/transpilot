@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/layout.dart';
 import '../../../domain/entities/app_preferences.dart';
@@ -48,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
-                                child: Text(value.name),
+                                child: Text(value.label),
                               ),
                             )
                             .toList(),

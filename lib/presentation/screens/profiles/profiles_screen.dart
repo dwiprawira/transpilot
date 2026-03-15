@@ -15,6 +15,8 @@ class ProfilesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profilesAsync = ref.watch(profilesControllerProvider);
     final profiles = profilesAsync.valueOrNull;
+    final width = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = AppLayout.horizontalPadding(width);
 
     if (profilesAsync.isLoading && profiles == null) {
       return const Center(child: CircularProgressIndicator());
@@ -37,73 +39,114 @@ class ProfilesScreen extends ConsumerWidget {
               ],
             )
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                16,
+                horizontalPadding,
+                24,
+              ),
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton.icon(
-                    onPressed: () => _openProfileForm(context, ref, null),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Server'),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                for (final profile in profiles.profiles) ...[
-                  SectionCard(
-                    title: profile.name,
-                    trailing: profile.id == profiles.activeProfileId
-                        ? const Chip(label: Text('Active'))
-                        : null,
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1120),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          '${profile.useHttps ? 'https' : 'http'}://${profile.host}:${profile.port}${profile.normalizedRpcPath}',
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          profile.username.isEmpty
-                              ? 'Authentication: not configured'
-                              : 'Authentication: ${profile.username}',
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                _openProfileForm(context, ref, null),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Server'),
+                          ),
                         ),
                         const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: [
-                            if (profile.id != profiles.activeProfileId)
-                              FilledButton.tonalIcon(
-                                onPressed: () => ref
-                                    .read(profilesControllerProvider.notifier)
-                                    .setActiveProfile(profile.id),
-                                icon: const Icon(Icons.play_arrow_rounded),
-                                label: const Text('Use'),
-                              ),
-                            OutlinedButton.icon(
-                              onPressed: () =>
-                                  _openProfileForm(context, ref, profile),
-                              icon: const Icon(Icons.edit_outlined),
-                              label: const Text('Edit'),
+                        for (final profile in profiles.profiles) ...[
+                          SectionCard(
+                            title: profile.name,
+                            trailing: profile.id == profiles.activeProfileId
+                                ? const Chip(label: Text('Active'))
+                                : null,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _ProfileSummaryRow(
+                                  icon: Icons.link_rounded,
+                                  label: 'Endpoint',
+                                  value:
+                                      '${profile.useHttps ? 'https' : 'http'}://${profile.host}:${profile.port}${profile.normalizedRpcPath}',
+                                ),
+                                const SizedBox(height: 10),
+                                _ProfileSummaryRow(
+                                  icon: Icons.lock_outline_rounded,
+                                  label: 'Authentication',
+                                  value: profile.username.isEmpty
+                                      ? 'Not configured'
+                                      : profile.username,
+                                ),
+                                const SizedBox(height: 10),
+                                _ProfileSummaryRow(
+                                  icon: Icons.verified_user_outlined,
+                                  label: 'TLS',
+                                  value: profile.useHttps
+                                      ? 'Enabled, valid certificate required'
+                                      : 'Disabled',
+                                ),
+                                const SizedBox(height: 16),
+                                Wrap(
+                                  spacing: 12,
+                                  runSpacing: 12,
+                                  children: [
+                                    if (profile.id != profiles.activeProfileId)
+                                      FilledButton.tonalIcon(
+                                        onPressed: () => ref
+                                            .read(
+                                              profilesControllerProvider
+                                                  .notifier,
+                                            )
+                                            .setActiveProfile(profile.id),
+                                        icon: const Icon(
+                                          Icons.play_arrow_rounded,
+                                        ),
+                                        label: const Text('Use'),
+                                      ),
+                                    OutlinedButton.icon(
+                                      onPressed: () => _openProfileForm(
+                                        context,
+                                        ref,
+                                        profile,
+                                      ),
+                                      icon: const Icon(Icons.edit_outlined),
+                                      label: const Text('Edit'),
+                                    ),
+                                    OutlinedButton.icon(
+                                      onPressed: () =>
+                                          _testProfile(context, ref, profile),
+                                      icon: const Icon(
+                                        Icons.network_check_rounded,
+                                      ),
+                                      label: const Text('Test'),
+                                    ),
+                                    OutlinedButton.icon(
+                                      onPressed: () =>
+                                          _confirmDelete(context, ref, profile),
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                      ),
+                                      label: const Text('Delete'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            OutlinedButton.icon(
-                              onPressed: () =>
-                                  _testProfile(context, ref, profile),
-                              icon: const Icon(Icons.network_check_rounded),
-                              label: const Text('Test'),
-                            ),
-                            OutlinedButton.icon(
-                              onPressed: () =>
-                                  _confirmDelete(context, ref, profile),
-                              icon: const Icon(Icons.delete_outline_rounded),
-                              label: const Text('Delete'),
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
+                ),
               ],
             ),
     );
@@ -258,6 +301,9 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width >= 720;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -271,64 +317,96 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) =>
-                    (value == null || value.trim().isEmpty) ? 'Required' : null,
+              _ProfileFormSection(
+                title: 'Identity',
+                description:
+                    'Use a clear label so you can distinguish multiple Transmission servers.',
+                child: TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                  validator: (value) => (value == null || value.trim().isEmpty)
+                      ? 'Required'
+                      : null,
+                ),
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _hostController,
-                decoration: const InputDecoration(labelText: 'Host'),
-                validator: (value) =>
-                    (value == null || value.trim().isEmpty) ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _portController,
-                      decoration: const InputDecoration(labelText: 'Port'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        final port = int.tryParse(value ?? '');
-                        if (port == null || port <= 0 || port > 65535) {
-                          return 'Invalid port';
-                        }
-                        return null;
-                      },
+              const SizedBox(height: 16),
+              _ProfileFormSection(
+                title: 'Connection',
+                description:
+                    'Enter the host, port, and RPC path exposed by your Transmission instance.',
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _hostController,
+                      decoration: const InputDecoration(
+                        labelText: 'Host or IP address',
+                      ),
+                      validator: (value) =>
+                          (value == null || value.trim().isEmpty)
+                          ? 'Required'
+                          : null,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      value: _useHttps,
-                      title: const Text('HTTPS'),
-                      onChanged: (value) => setState(() => _useHttps = value),
+                    const SizedBox(height: 12),
+                    _ProfileResponsiveFields(
+                      minChildWidth: isWide ? 180 : 260,
+                      children: [
+                        TextFormField(
+                          controller: _portController,
+                          decoration: const InputDecoration(labelText: 'Port'),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            final port = int.tryParse(value ?? '');
+                            if (port == null || port <= 0 || port > 65535) {
+                              return 'Invalid port';
+                            }
+                            return null;
+                          },
+                        ),
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          value: _useHttps,
+                          title: const Text('Use HTTPS'),
+                          subtitle: const Text(
+                            'Requires a trusted certificate.',
+                          ),
+                          onChanged: (value) =>
+                              setState(() => _useHttps = value),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _rpcPathController,
+                      decoration: const InputDecoration(labelText: 'RPC path'),
+                      validator: (value) =>
+                          (value == null || value.trim().isEmpty)
+                          ? 'Required'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    _TlsNotice(useHttps: _useHttps),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _rpcPathController,
-                decoration: const InputDecoration(labelText: 'RPC Path'),
-                validator: (value) =>
-                    (value == null || value.trim().isEmpty) ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Username'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
+              const SizedBox(height: 16),
+              _ProfileFormSection(
+                title: 'Authentication',
+                description:
+                    'Leave these blank if the Transmission RPC endpoint does not require credentials.',
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(labelText: 'Username'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      obscureText: true,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               Wrap(
@@ -401,6 +479,154 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
         setState(() => _isSaving = false);
       }
     }
+  }
+}
+
+class _ProfileSummaryRow extends StatelessWidget {
+  const _ProfileSummaryRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: Theme.of(context).textTheme.labelMedium),
+              const SizedBox(height: 2),
+              Text(value, style: Theme.of(context).textTheme.bodyLarge),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileFormSection extends StatelessWidget {
+  const _ProfileFormSection({
+    required this.title,
+    required this.description,
+    required this.child,
+  });
+
+  final String title;
+  final String description;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(description, style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileResponsiveFields extends StatelessWidget {
+  const _ProfileResponsiveFields({
+    required this.children,
+    this.minChildWidth = 240,
+  });
+
+  final List<Widget> children;
+  final double minChildWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final useSingleColumn = width < (minChildWidth * 2) + 16;
+
+        if (useSingleColumn) {
+          return Column(
+            children: [
+              for (var index = 0; index < children.length; index++) ...[
+                children[index],
+                if (index < children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        final itemWidth = (width - 16) / 2;
+        return Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          children: [
+            for (final child in children)
+              SizedBox(width: itemWidth, child: child),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _TlsNotice extends StatelessWidget {
+  const _TlsNotice({required this.useHttps});
+
+  final bool useHttps;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              useHttps ? Icons.info_outline_rounded : Icons.public_rounded,
+              color: scheme.onSecondaryContainer,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                useHttps
+                    ? 'Self-signed certificates are not trusted by this build. Use a certificate from a trusted CA, or switch to HTTP only if your network is private and you accept the risk.'
+                    : 'HTTP avoids certificate validation entirely, but traffic is unencrypted. Only use it on a network you trust.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSecondaryContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
