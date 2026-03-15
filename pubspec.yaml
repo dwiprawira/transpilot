@@ -1,0 +1,30 @@
+name: transpilot
+description: "A production-ready Transmission RPC client for Android and iOS."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.5.1
+  dio: ^5.8.0+1
+  flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.5.2
+  file_picker: ^8.1.7
+  collection: ^1.19.1
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  path: ^1.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
