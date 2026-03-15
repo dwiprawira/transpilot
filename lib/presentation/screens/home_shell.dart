@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/platform/incoming_torrent.dart';
 import '../../core/utils/layout.dart';
 import '../controllers/profiles_controller.dart';
 import 'dashboard/dashboard_screen.dart';
@@ -17,6 +20,56 @@ class HomeShell extends ConsumerStatefulWidget {
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   int _index = 0;
+  StreamSubscription<IncomingTorrent>? _incomingTorrentSubscription;
+  bool _isPresentingIncomingTorrent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.microtask(_bindIncomingTorrents);
+  }
+
+  Future<void> _bindIncomingTorrents() async {
+    final service = ref.read(incomingTorrentServiceProvider);
+    _incomingTorrentSubscription = service.stream.listen(
+      _handleIncomingTorrent,
+    );
+
+    final initialTorrent = await service.takeInitialTorrent();
+    if (!mounted || initialTorrent == null) {
+      return;
+    }
+    await _handleIncomingTorrent(initialTorrent);
+  }
+
+  Future<void> _handleIncomingTorrent(IncomingTorrent incomingTorrent) async {
+    if (!mounted || _isPresentingIncomingTorrent) {
+      return;
+    }
+
+    _isPresentingIncomingTorrent = true;
+    setState(() => _index = 0);
+
+    try {
+      await openAddTorrentSheet(
+        context,
+        ref,
+        initialTorrent: IncomingTorrentSeed(
+          fileName: incomingTorrent.fileName,
+          bytes: incomingTorrent.bytes,
+          magnetLink: incomingTorrent.magnetLink,
+        ),
+      );
+    } finally {
+      _isPresentingIncomingTorrent = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _incomingTorrentSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

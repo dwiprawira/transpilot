@@ -17,7 +17,7 @@ TransPilot is a production-minded Flutter mobile client for managing remote Tran
 - Automatic `X-Transmission-Session-Id` negotiation and retry handling
 - Adaptive UI for phones, tablets, portrait, and landscape
 - Torrent search, filter, sort, grouping, detail view, and actions
-- Add torrent via magnet link, `.torrent` file, or clipboard
+- Add torrent via magnet link, `.torrent` file, clipboard, or direct open/share from the OS
 - Session dashboard and editable server/session settings
 - Unit tests for RPC behavior, DTO mapping, grouping, filtering, and controller logic
 
@@ -32,6 +32,8 @@ TransPilot is a production-minded Flutter mobile client for managing remote Tran
 
 ### 📋 Torrent Management
 
+- Open `.torrent` files directly into the add torrent flow on Android and iOS
+- Open `magnet:` links directly into the add torrent flow from supported apps and browsers
 - Search torrents by name, path, or tracker
 - Filter by status
 - Sort by name, progress, added date, download speed, and upload speed
@@ -150,13 +152,16 @@ flutter test
 1. Open `Servers` and add a Transmission server profile.
 2. Test the connection and save the profile.
 3. Set the server as active.
-4. Open `Torrents` to browse, group, sort, and manage torrents.
-5. Open `Dashboard` for session and transfer overview.
-6. Open `Settings` for app preferences and session settings.
+4. Open a `magnet:` link or `.torrent` file from another app to jump straight into `Add Torrent`, or use the add button inside `Torrents`.
+5. Open `Torrents` to browse, group, sort, and manage torrents.
+6. Open `Dashboard` for session and transfer overview.
+7. Open `Settings` for app preferences and session settings.
 
 ## 📝 Platform Notes
 
 - Credentials are stored using Android encrypted shared preferences and iOS Keychain through `flutter_secure_storage`.
+- Android registers `application/x-bittorrent` files and the `magnet:` scheme so supported apps can hand torrents directly to TransPilot.
+- iOS registers `.torrent` documents and the `magnet:` URL scheme so the add torrent sheet can be opened from Files and compatible browsers/apps.
 - Invalid or self-signed TLS certificates are surfaced as errors. This build does not provide a certificate bypass or pinning UI.
 - Torrent pre-selection from `.torrent` contents before upload is not implemented yet.
 - The files section is currently a flat list instead of a nested directory tree.

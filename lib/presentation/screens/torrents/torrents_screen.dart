@@ -706,22 +706,36 @@ class _SheetLayout extends StatelessWidget {
   }
 }
 
-Future<void> openAddTorrentSheet(BuildContext context, WidgetRef ref) async {
+Future<void> openAddTorrentSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  IncomingTorrentSeed? initialTorrent,
+}) async {
   await showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (context) => const SafeArea(
+    builder: (context) => SafeArea(
       child: Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AddTorrentForm(),
+        padding: const EdgeInsets.only(bottom: 12),
+        child: AddTorrentForm(initialTorrent: initialTorrent),
       ),
     ),
   );
 }
 
+class IncomingTorrentSeed {
+  const IncomingTorrentSeed({this.fileName, this.bytes, this.magnetLink});
+
+  final String? fileName;
+  final Uint8List? bytes;
+  final String? magnetLink;
+}
+
 class AddTorrentForm extends ConsumerStatefulWidget {
-  const AddTorrentForm({super.key});
+  const AddTorrentForm({super.key, this.initialTorrent});
+
+  final IncomingTorrentSeed? initialTorrent;
 
   @override
   ConsumerState<AddTorrentForm> createState() => _AddTorrentFormState();
@@ -736,6 +750,17 @@ class _AddTorrentFormState extends ConsumerState<AddTorrentForm> {
   List<int>? _metainfo;
   String? _fileName;
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialTorrent = widget.initialTorrent;
+    if (initialTorrent != null) {
+      _metainfo = initialTorrent.bytes;
+      _fileName = initialTorrent.fileName;
+      _magnetController.text = initialTorrent.magnetLink ?? '';
+    }
+  }
 
   @override
   void dispose() {
@@ -869,6 +894,9 @@ class _AddTorrentFormState extends ConsumerState<AddTorrentForm> {
     setState(() {
       _metainfo = bytes;
       _fileName = file.name;
+      if (bytes != null) {
+        _magnetController.clear();
+      }
     });
   }
 
