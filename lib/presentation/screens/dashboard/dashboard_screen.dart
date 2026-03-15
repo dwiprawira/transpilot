@@ -28,10 +28,20 @@ class DashboardScreen extends ConsumerWidget {
     }
 
     if (state.errorMessage != null && state.sessionInfo == null) {
-      return EmptyState(
-        icon: Icons.error_outline_rounded,
-        title: 'Unable to load dashboard',
-        message: state.errorMessage!,
+      return RefreshIndicator(
+        onRefresh: () =>
+            ref.read(dashboardControllerProvider.notifier).refresh(),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.16),
+            EmptyState(
+              icon: Icons.error_outline_rounded,
+              title: 'Unable to load dashboard',
+              message: state.errorMessage!,
+            ),
+          ],
+        ),
       );
     }
 
@@ -55,6 +65,7 @@ class DashboardScreen extends ConsumerWidget {
           onRefresh: () =>
               ref.read(dashboardControllerProvider.notifier).refresh(),
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(padding, 12, padding, 24),
             children: [
               _DashboardHero(
