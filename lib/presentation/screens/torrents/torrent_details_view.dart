@@ -728,11 +728,16 @@ Future<void> openTorrentActions(
   final hostContext = context;
   await showModalBottomSheet<void>(
     context: context,
+    isScrollControlled: true,
     showDragHandle: true,
     builder: (sheetContext) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Wrap(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.8,
+        ),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          shrinkWrap: true,
           children: [
             _ActionButton(
               icon: Icons.play_arrow_rounded,
