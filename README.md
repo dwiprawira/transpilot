@@ -170,7 +170,7 @@ fvm flutter test
 
 ## 🔁 Automated Builds and Releases
 
-GitHub Actions uses Flutter 3.47.7 and Xcode 27 to run static analysis, tests, and Android/iOS builds for pushes to `main`, pull requests, and manual workflow runs. Build artifacts are retained on each workflow run for 14 days.
+GitHub Actions uses Flutter 3.47.7 and Xcode 27 to run static analysis, tests, and Android/iOS builds only when a `v*` release tag is pushed. Build artifacts are retained on each workflow run for 14 days.
 
 To publish a release, first update `version` in `pubspec.yaml`, then push a matching version tag:
 
