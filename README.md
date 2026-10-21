@@ -18,18 +18,82 @@ TransPilot is a production-minded Flutter mobile client for managing remote Tran
 
 ## 📦 Download and Install
 
-- [Download the latest Android APK](https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-android.apk)
-- [Download the latest unsigned iOS IPA](https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-ios.ipa)
-- [Add TransPilot to SideStore](https://intradeus.github.io/http-protocol-redirector?r=sidestore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json)
-- [Add TransPilot to AltStore Classic](https://intradeus.github.io/http-protocol-redirector?r=altstore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json)
+<p align="center">
+  <a href="https://github.com/dwiprawira/transpilot/releases/latest">
+    <img src="https://img.shields.io/github/v/release/dwiprawira/transpilot?display_name=tag&style=for-the-badge&label=Latest%20Release&color=2F855A" alt="Latest TransPilot release" />
+  </a>
+</p>
 
-If the one-tap source link is not opened by iOS, add this URL manually in SideStore or AltStore Classic:
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <a href="https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-android.apk">
+        <img src="https://cdn.simpleicons.org/android/3DDC84" width="64" height="64" alt="Android" />
+      </a>
+      <br />
+      <strong>Android</strong>
+      <br />
+      <sub>Download and install the latest release APK.</sub>
+      <br /><br />
+      <a href="https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-android.apk">
+        <img src="https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download Android APK" />
+      </a>
+    </td>
+    <td align="center" width="50%">
+      <a href="https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-ios.ipa">
+        <img src="https://cdn.simpleicons.org/apple/808080" width="64" height="64" alt="iOS" />
+      </a>
+      <br />
+      <strong>iOS IPA</strong>
+      <br />
+      <sub>Download the unsigned IPA for manual sideloading.</sub>
+      <br /><br />
+      <a href="https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-ios.ipa">
+        <img src="https://img.shields.io/badge/Download-IPA-555555?style=for-the-badge&logo=apple&logoColor=white" alt="Download iOS IPA" />
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <a href="https://intradeus.github.io/http-protocol-redirector?r=sidestore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json">
+        <img src="https://sidestore.io/assets/icon.png" width="72" height="72" alt="SideStore" />
+      </a>
+      <br />
+      <strong>SideStore</strong>
+      <br />
+      <sub>Add the TransPilot source for one-tap install and updates.</sub>
+      <br /><br />
+      <a href="https://intradeus.github.io/http-protocol-redirector?r=sidestore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json">
+        <img src="https://img.shields.io/badge/Add_to-SideStore-5B67F1?style=for-the-badge" alt="Add TransPilot to SideStore" />
+      </a>
+    </td>
+    <td align="center" width="50%">
+      <a href="https://intradeus.github.io/http-protocol-redirector?r=altstore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json">
+        <img src="https://raw.githubusercontent.com/altstoreio/AltStore/marketplace/AltStore/Resources/Icons.xcassets/Classic/Original.appiconset/Group%2023.png" width="72" height="72" alt="AltStore Classic" />
+      </a>
+      <br />
+      <strong>AltStore Classic</strong>
+      <br />
+      <sub>Add the TransPilot source for one-tap install and updates.</sub>
+      <br /><br />
+      <a href="https://intradeus.github.io/http-protocol-redirector?r=altstore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json">
+        <img src="https://img.shields.io/badge/Add_to-AltStore-6E56CF?style=for-the-badge" alt="Add TransPilot to AltStore Classic" />
+      </a>
+    </td>
+  </tr>
+</table>
+
+<details>
+  <summary><strong>Manual source installation and troubleshooting</strong></summary>
+
+If a one-tap button does not open on iOS, copy this URL into the Sources section of SideStore or AltStore Classic:
 
 ```text
 https://github.com/dwiprawira/transpilot/releases/latest/download/altstore-source.json
 ```
 
-The IPA is unsigned by design. SideStore or AltStore Classic signs it with the Apple account configured on the device. These links become available after the first tagged GitHub release.
+The IPA is unsigned by design. SideStore or AltStore Classic signs it with the Apple account configured on the device.
+</details>
 
 ## ✨ Highlights
 
