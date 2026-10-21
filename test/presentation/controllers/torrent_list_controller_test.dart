@@ -15,68 +15,65 @@ import 'package:transpilot/presentation/controllers/profiles_controller.dart';
 import 'package:transpilot/presentation/controllers/torrent_list_controller.dart';
 
 void main() {
-  test(
-    'refreshes torrents from the active profile and applies persisted preferences',
-    () async {
-      final profile = const ServerProfile(
-        id: 'server-1',
-        name: 'Home NAS',
-        host: 'localhost',
-        port: 9091,
-        rpcPath: '/transmission/rpc',
-        useHttps: false,
-        allowInvalidCertificate: false,
-        username: '',
-        password: '',
-      );
-      final fakePreferencesRepository = _FakePreferencesRepository(
-        AppPreferences.defaults().copyWith(
-          themeMode: ThemeMode.dark,
-          groupingMode: TorrentGroupingMode.tracker,
-          filter: TorrentFilter.active,
-          viewMode: TorrentListViewMode.compact,
+  test('refreshes torrents from the active profile and applies persisted preferences', () async {
+    final profile = const ServerProfile(
+      id: 'server-1',
+      name: 'Home NAS',
+      host: 'localhost',
+      port: 9091,
+      rpcPath: '/transmission/rpc',
+      useHttps: false,
+      allowInvalidCertificate: false,
+      username: '',
+      password: '',
+    );
+    final fakePreferencesRepository = _FakePreferencesRepository(
+      AppPreferences.defaults().copyWith(
+        themeMode: ThemeMode.dark,
+        groupingMode: TorrentGroupingMode.tracker,
+        filter: TorrentFilter.active,
+        viewMode: TorrentListViewMode.compact,
+      ),
+    );
+    final fakeProfileRepository = _FakeProfileRepository(
+      profiles: [profile],
+      activeProfileId: profile.id,
+    );
+    final fakeTransmissionRepository = _FakeTransmissionRepository(profile, [
+      _buildTorrent(id: 1, name: 'Alpha', rateDownload: 100),
+      _buildTorrent(id: 2, name: 'Beta', rateUpload: 25),
+    ]);
+
+    final container = ProviderContainer(
+      overrides: [
+        preferencesRepositoryProvider.overrideWithValue(
+          fakePreferencesRepository,
         ),
-      );
-      final fakeProfileRepository = _FakeProfileRepository(
-        profiles: [profile],
-        activeProfileId: profile.id,
-      );
-      final fakeTransmissionRepository = _FakeTransmissionRepository(profile, [
-        _buildTorrent(id: 1, name: 'Alpha', rateDownload: 100),
-        _buildTorrent(id: 2, name: 'Beta', rateUpload: 25),
-      ]);
+        profileRepositoryProvider.overrideWithValue(fakeProfileRepository),
+        transmissionRepositoryFactoryProvider.overrideWithValue(
+          _FakeTransmissionRepositoryFactory(fakeTransmissionRepository),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          preferencesRepositoryProvider.overrideWithValue(
-            fakePreferencesRepository,
-          ),
-          profileRepositoryProvider.overrideWithValue(fakeProfileRepository),
-          transmissionRepositoryFactoryProvider.overrideWithValue(
-            _FakeTransmissionRepositoryFactory(fakeTransmissionRepository),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+    container.read(preferencesControllerProvider);
+    await _flushMicrotasks();
+    container.read(profilesControllerProvider);
+    await _flushMicrotasks();
 
-      container.read(preferencesControllerProvider);
-      await _flushMicrotasks();
-      container.read(profilesControllerProvider);
-      await _flushMicrotasks();
+    final controller = container.read(torrentListControllerProvider.notifier);
+    await controller.refresh(forceLoading: true);
 
-      final controller = container.read(torrentListControllerProvider.notifier);
-      await controller.refresh(forceLoading: true);
-
-      final state = container.read(torrentListControllerProvider);
-      expect(state.isConfigured, isTrue);
-      expect(state.groupingMode, TorrentGroupingMode.tracker);
-      expect(state.filter, TorrentFilter.active);
-      expect(state.viewMode, TorrentListViewMode.compact);
-      expect(state.torrents, hasLength(2));
-      expect(state.visibleTorrents, hasLength(2));
-      expect(state.selectedTorrentId, 1);
-    },
-  );
+    final state = container.read(torrentListControllerProvider);
+    expect(state.isConfigured, isTrue);
+    expect(state.groupingMode, TorrentGroupingMode.tracker);
+    expect(state.filter, TorrentFilter.active);
+    expect(state.viewMode, TorrentListViewMode.compact);
+    expect(state.torrents, hasLength(2));
+    expect(state.visibleTorrents, hasLength(2));
+    expect(state.selectedTorrentId, 1);
+  });
 }
 
 Future<void> _flushMicrotasks() async {

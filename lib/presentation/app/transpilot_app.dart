@@ -10,7 +10,7 @@ class TransPilotApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final preferences = ref.watch(preferencesControllerProvider).valueOrNull;
+    final preferences = ref.watch(preferencesControllerProvider).value;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TransPilot',

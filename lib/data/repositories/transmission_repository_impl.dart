@@ -56,9 +56,8 @@ class TransmissionRepositoryImpl implements TransmissionRepository {
       'free-space',
       arguments: {'path': path},
     );
-    return FreeSpaceDto(
-      Map<String, dynamic>.from(response['arguments'] as Map),
-    ).toDomain();
+    return FreeSpaceDto(Map<String, dynamic>.from(response['arguments'] as Map))
+        .toDomain();
   }
 
   @override
@@ -93,9 +92,8 @@ class TransmissionRepositoryImpl implements TransmissionRepository {
     if (torrents.isEmpty) {
       return null;
     }
-    return TorrentDto(
-      Map<String, dynamic>.from(torrents.first as Map),
-    ).toDomain();
+    return TorrentDto(Map<String, dynamic>.from(torrents.first as Map))
+        .toDomain();
   }
 
   @override

@@ -130,10 +130,9 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       _InfoItem(
                         label: 'Alternative speed',
-                        value:
-                            (sessionInfo?.altSpeedEnabled ?? false)
-                                ? 'Enabled'
-                                : 'Disabled',
+                        value: (sessionInfo?.altSpeedEnabled ?? false)
+                            ? 'Enabled'
+                            : 'Disabled',
                       ),
                       _InfoItem(
                         label: 'Encryption',
@@ -162,10 +161,7 @@ class DashboardScreen extends ConsumerWidget {
                           stats?.cumulativeUploadedBytes ?? 0,
                         ),
                       ),
-                      _InfoItem(
-                        label: 'Ratio',
-                        value: _lifetimeRatio(stats),
-                      ),
+                      _InfoItem(label: 'Ratio', value: _lifetimeRatio(stats)),
                       _InfoItem(
                         label: 'Files added',
                         value: '${stats?.filesAdded ?? 0}',
@@ -225,8 +221,7 @@ class _DashboardHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final totalSpeed =
-        (stats?.downloadSpeed ?? 0) + (stats?.uploadSpeed ?? 0);
+    final totalSpeed = (stats?.downloadSpeed ?? 0) + (stats?.uploadSpeed ?? 0);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -240,9 +235,7 @@ class _DashboardHero extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,7 +272,9 @@ class _DashboardHero extends StatelessWidget {
                     Text(
                       sessionInfo?.version ?? 'Transmission server',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.onPrimaryContainer.withValues(alpha: 0.78),
+                        color: scheme.onPrimaryContainer.withValues(
+                          alpha: 0.78,
+                        ),
                       ),
                     ),
                   ],
@@ -485,7 +480,9 @@ class _MetricTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.24)),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.24),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -547,7 +544,9 @@ class _InfoSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.22)),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.22),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

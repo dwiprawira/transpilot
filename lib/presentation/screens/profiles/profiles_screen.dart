@@ -14,7 +14,7 @@ class ProfilesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profilesAsync = ref.watch(profilesControllerProvider);
-    final profiles = profilesAsync.valueOrNull;
+    final profiles = profilesAsync.value;
     final width = MediaQuery.sizeOf(context).width;
     final horizontalPadding = AppLayout.horizontalPadding(width);
 
@@ -31,8 +31,7 @@ class ProfilesScreen extends ConsumerWidget {
                 EmptyState(
                   icon: Icons.dns_rounded,
                   title: 'No servers yet',
-                  message:
-                      'Add your first Transmission server profile to start managing torrents.',
+                  message: 'Add your first Transmission server profile to start managing torrents.',
                   actionLabel: 'Add Server',
                   onAction: () => _openProfileForm(context, ref, null),
                 ),
@@ -170,9 +169,8 @@ class ProfilesScreen extends ConsumerWidget {
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_errorMessage(error))));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_errorMessage(error))));
       }
     }
   }
@@ -324,8 +322,7 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
               const SizedBox(height: 20),
               _ProfileFormSection(
                 title: 'Identity',
-                description:
-                    'Use a clear label so you can distinguish multiple Transmission servers.',
+                description: 'Use a clear label so you can distinguish multiple Transmission servers.',
                 child: TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(labelText: 'Name'),
@@ -337,8 +334,7 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
               const SizedBox(height: 16),
               _ProfileFormSection(
                 title: 'Connection',
-                description:
-                    'Enter the host, port, and RPC path exposed by your Transmission instance.',
+                description: 'Enter the host, port, and RPC path exposed by your Transmission instance.',
                 child: Column(
                   children: [
                     TextFormField(
@@ -416,8 +412,7 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
               const SizedBox(height: 16),
               _ProfileFormSection(
                 title: 'Authentication',
-                description:
-                    'Leave these blank if the Transmission RPC endpoint does not require credentials.',
+                description: 'Leave these blank if the Transmission RPC endpoint does not require credentials.',
                 child: Column(
                   children: [
                     TextFormField(
@@ -472,9 +467,8 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_errorMessage(error))));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_errorMessage(error))));
       }
     }
   }
@@ -495,9 +489,8 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_errorMessage(error))));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_errorMessage(error))));
       }
     } finally {
       if (mounted) {
@@ -649,9 +642,8 @@ class _TlsNotice extends StatelessWidget {
                           ? 'Invalid TLS certificates will be accepted for this server. Use this only when you trust the server and network.'
                           : 'Only certificates trusted by the device will be accepted. Enable the option above if you need to connect to a self-signed server.')
                     : 'HTTP avoids certificate validation entirely, but traffic is unencrypted. Only use it on a network you trust.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSecondaryContainer,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: scheme.onSecondaryContainer),
               ),
             ),
           ],

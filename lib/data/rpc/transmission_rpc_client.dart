@@ -9,9 +9,8 @@ import '../../core/logging/app_logger.dart';
 import '../../domain/entities/server_profile.dart';
 
 class TransmissionRpcClient {
-  TransmissionRpcClient(this.profile, {Dio? dio, AppLogger? logger})
+  TransmissionRpcClient(this.profile, {Dio? dio, this._logger})
     : _endpoint = profile.rpcUri,
-      _logger = logger,
       _dio =
           dio ??
           Dio(

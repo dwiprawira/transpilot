@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../domain/entities/app_preferences.dart';
 import '../../domain/repositories/preferences_repository.dart';
@@ -26,7 +27,7 @@ class PreferencesController extends StateNotifier<AsyncValue<AppPreferences>> {
     await _repository.save(preferences);
   }
 
-  AppPreferences get _current => state.valueOrNull ?? AppPreferences.defaults();
+  AppPreferences get _current => state.value ?? AppPreferences.defaults();
 
   Future<void> updateThemeMode(ThemeMode themeMode) {
     return _save(_current.copyWith(themeMode: themeMode));

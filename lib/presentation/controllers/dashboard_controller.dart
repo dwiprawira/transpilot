@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../domain/entities/app_preferences.dart';
 import '../../domain/entities/server_profile.dart';
@@ -103,7 +104,7 @@ class DashboardController extends StateNotifier<DashboardState> {
   TransmissionRepository? get _repository {
     final active = ref
         .read(profilesControllerProvider)
-        .valueOrNull
+        .value
         ?.activeProfile;
     if (active == null) {
       return null;
@@ -161,11 +162,11 @@ final dashboardControllerProvider =
     StateNotifierProvider<DashboardController, DashboardState>((ref) {
       final controller = DashboardController(ref);
       Future<void>.microtask(() {
-        final preferences = ref.read(preferencesControllerProvider).valueOrNull;
+        final preferences = ref.read(preferencesControllerProvider).value;
         if (preferences != null) {
           controller.applyPreferences(preferences);
         }
-        final profilesState = ref.read(profilesControllerProvider).valueOrNull;
+        final profilesState = ref.read(profilesControllerProvider).value;
         if (profilesState != null) {
           controller.handleProfilesChanged(profilesState);
         }
@@ -174,7 +175,7 @@ final dashboardControllerProvider =
         next.whenData(controller.applyPreferences);
       });
       ref.listen(profilesControllerProvider, (_, next) {
-        controller.handleProfilesChanged(next.valueOrNull);
+        controller.handleProfilesChanged(next.value);
       });
       return controller;
     });

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/server_profile.dart';
@@ -35,7 +36,7 @@ class ProfilesController extends StateNotifier<AsyncValue<ProfilesState>> {
         ? profile.copyWith(id: const Uuid().v4())
         : profile;
     await repository.saveProfile(withId);
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current?.activeProfile == null) {
       await repository.saveActiveProfileId(withId.id);
     }
@@ -49,7 +50,7 @@ class ProfilesController extends StateNotifier<AsyncValue<ProfilesState>> {
 
   Future<void> setActiveProfile(String profileId) async {
     await ref.read(profileRepositoryProvider).saveActiveProfileId(profileId);
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       await load();
       return;
@@ -59,7 +60,7 @@ class ProfilesController extends StateNotifier<AsyncValue<ProfilesState>> {
 
   Future<void> clearActiveProfile() async {
     await ref.read(profileRepositoryProvider).saveActiveProfileId(null);
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       await load();
       return;

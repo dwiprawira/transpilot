@@ -1,0 +1,220 @@
+name: Build and release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: 3.47.7
+
+jobs:
+  verify:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_version="${GITHUB_REF_NAME#v}"
+          pubspec_version="$(sed -nE 's/^version:[[:space:]]*([^+[:space:]]+).*/\1/p' pubspec.yaml)"
+
+          if [[ -z "$pubspec_version" || "$tag_version" != "$pubspec_version" ]]; then
+            echo "Tag version ($tag_version) must match pubspec.yaml ($pubspec_version)." >&2
+            exit 1
+          fi
+
+      - name: Analyze
+        run: dart analyze
+
+      - name: Test
+        run: flutter test
+
+  android:
+    name: Build Android APK
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Prepare Android artifact
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/TransPilot-android.apk
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: transpilot-android-${{ github.sha }}
+          path: dist/TransPilot-android.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  ios:
+    name: Build unsigned iOS IPA
+    needs: verify
+    runs-on: xcode-27
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build unsigned iOS app
+        run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/ios/iphoneos/Payload dist
+          cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+          (
+            cd build/ios/iphoneos
+            zip -qry "$GITHUB_WORKSPACE/dist/TransPilot-ios.ipa" Payload
+          )
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: transpilot-ios-${{ github.sha }}
+          path: dist/TransPilot-ios.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Publish GitHub release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - android
+      - ios
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: transpilot-*-${{ github.sha }}
+          path: release-files
+          merge-multiple: true
+
+      - name: Generate AltStore and SideStore source
+        shell: bash
+        env:
+          REPOSITORY: ${{ github.repository }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${TAG_NAME#v}"
+          release_date="$(date -u +%F)"
+          ipa_size="$(stat -c '%s' release-files/TransPilot-ios.ipa)"
+          release_base="https://github.com/${REPOSITORY}/releases"
+          source_url="${release_base}/latest/download/altstore-source.json"
+          icon_url="${release_base}/latest/download/TransPilot-icon.png"
+          ipa_url="${release_base}/download/${TAG_NAME}/TransPilot-ios.ipa"
+
+          jq -n \
+            --arg source_url "$source_url" \
+            --arg icon_url "$icon_url" \
+            --arg ipa_url "$ipa_url" \
+            --arg version "$version" \
+            --arg release_date "$release_date" \
+            --arg ipa_size "$ipa_size" \
+            '{
+              name: "TransPilot",
+              identifier: "com.transpilot.source",
+              sourceURL: $source_url,
+              apps: [
+                {
+                  name: "TransPilot",
+                  bundleIdentifier: "com.transpilot.app",
+                  developerName: "dwiprawira",
+                  subtitle: "Manage Transmission servers from iOS",
+                  localizedDescription: "A Flutter client for managing remote Transmission servers, torrents, and session settings.",
+                  iconURL: $icon_url,
+                  tintColor: "2F855A",
+                  versions: [
+                    {
+                      version: $version,
+                      date: $release_date,
+                      localizedDescription: ("Automated TransPilot " + $version + " release."),
+                      downloadURL: $ipa_url,
+                      size: ($ipa_size | tonumber),
+                      minOSVersion: "15.0"
+                    }
+                  ]
+                }
+              ]
+            }' > release-files/altstore-source.json
+
+          cp icon.png release-files/TransPilot-icon.png
+          jq empty release-files/altstore-source.json
+
+      - name: Publish release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-files/TransPilot-android.apk
+            release-files/TransPilot-ios.ipa
+            release-files/TransPilot-icon.png
+            release-files/altstore-source.json
+          generate_release_notes: true
+

@@ -4,19 +4,19 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.11.1
+  sdk: ^3.13.5
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  flutter_riverpod: ^2.5.1
+  cupertino_icons: ^2.0.0
+  flutter_riverpod: ^3.4.3
   dio: ^5.8.0+1
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^11.2.0
   shared_preferences: ^2.5.2
-  file_picker: ^8.1.7
+  file_picker: ^13.1.0
   collection: ^1.19.1
-  intl: ^0.19.0
+  intl: ^0.20.3
   uuid: ^4.5.1
   path: ^1.9.1
 

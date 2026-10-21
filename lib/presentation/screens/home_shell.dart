@@ -83,7 +83,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       SettingsScreen(),
     ];
 
-    final profiles = ref.watch(profilesControllerProvider).valueOrNull;
+    final profiles = ref.watch(profilesControllerProvider).value;
     final activeProfile = profiles?.activeProfile;
 
     final appBar = AppBar(
@@ -94,9 +94,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         children: [
           Text(
             titles[_index],
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Container(
@@ -107,9 +106,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             ),
             child: Text(
               activeProfile?.name ?? 'No server selected',
-              style: Theme.of(
-                context,
-              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
         ],

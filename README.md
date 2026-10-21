@@ -10,10 +10,26 @@
 ![Transmission RPC](https://img.shields.io/badge/Transmission-RPC-2F855A?style=for-the-badge)
 ![Android](https://img.shields.io/badge/Android-Supported-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![iOS](https://img.shields.io/badge/iOS-Supported-111827?style=for-the-badge&logo=apple&logoColor=white)
+[![Build](https://github.com/dwiprawira/transpilot/actions/workflows/build-release.yml/badge.svg)](https://github.com/dwiprawira/transpilot/actions/workflows/build-release.yml)
 
 > This project was 100% created using Codex AI.
 
 TransPilot is a production-minded Flutter mobile client for managing remote Transmission servers through the Transmission RPC API. It supports multiple saved servers, secure credential storage, adaptive phone and tablet layouts, session-aware RPC retry handling, torrent grouping, and live session controls on Android and iOS.
+
+## 📦 Download and Install
+
+- [Download the latest Android APK](https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-android.apk)
+- [Download the latest unsigned iOS IPA](https://github.com/dwiprawira/transpilot/releases/latest/download/TransPilot-ios.ipa)
+- [Add TransPilot to SideStore](https://intradeus.github.io/http-protocol-redirector?r=sidestore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json)
+- [Add TransPilot to AltStore Classic](https://intradeus.github.io/http-protocol-redirector?r=altstore%3A%2F%2Fsource%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Fdwiprawira%2Ftranspilot%2Freleases%2Flatest%2Fdownload%2Faltstore-source.json)
+
+If the one-tap source link is not opened by iOS, add this URL manually in SideStore or AltStore Classic:
+
+```text
+https://github.com/dwiprawira/transpilot/releases/latest/download/altstore-source.json
+```
+
+The IPA is unsigned by design. SideStore or AltStore Classic signs it with the Apple account configured on the device. These links become available after the first tagged GitHub release.
 
 ## ✨ Highlights
 
@@ -108,26 +124,26 @@ The RPC layer centralizes Transmission-specific behavior, especially session ref
 
 ### Prerequisites
 
-- Flutter stable
+- Flutter stable 3.47.7 (selected through `.fvmrc`)
 - Android Studio or Xcode
 - A reachable Transmission RPC server
 
 ### Install dependencies
 
 ```bash
-flutter pub get
+fvm flutter pub get
 ```
 
 ### Run on Android
 
 ```bash
-flutter run -d android
+fvm flutter run -d android
 ```
 
 ### Run on iOS
 
 ```bash
-flutter run -d ios
+fvm flutter run -d ios
 ```
 
 If CocoaPods is not initialized yet:
@@ -143,14 +159,27 @@ cd ..
 Run static analysis:
 
 ```bash
-dart analyze
+fvm dart analyze
 ```
 
 Run tests:
 
 ```bash
-flutter test
+fvm flutter test
 ```
+
+## 🔁 Automated Builds and Releases
+
+GitHub Actions uses Flutter 3.47.7 and Xcode 27 to run static analysis, tests, and Android/iOS builds for pushes to `main`, pull requests, and manual workflow runs. Build artifacts are retained on each workflow run for 14 days.
+
+To publish a release, first update `version` in `pubspec.yaml`, then push a matching version tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The release workflow publishes the Android APK, unsigned iOS IPA, and an AltStore/SideStore-compatible source manifest. A tag such as `v1.0.0` must match `version: 1.0.0+...` in `pubspec.yaml`.
 
 ## 📱 Usage Flow
 
@@ -164,7 +193,8 @@ flutter test
 
 ## 📝 Platform Notes
 
-- Credentials are stored using Android encrypted shared preferences and iOS Keychain through `flutter_secure_storage`.
+- The current Flutter/Xcode toolchain supports iOS 15 and newer.
+- Credentials are stored using platform-backed secure storage on Android and iOS Keychain through `flutter_secure_storage`.
 - Android registers `application/x-bittorrent` files and the `magnet:` scheme so supported apps can hand torrents directly to TransPilot.
 - iOS registers `.torrent` documents and the `magnet:` URL scheme so the add torrent sheet can be opened from Files and compatible browsers/apps.
 - HTTPS connections can optionally allow invalid or self-signed certificates on a per-server basis. Leave this disabled unless you trust the server and network.
@@ -177,7 +207,7 @@ flutter test
 - Download-path grouping prefers torrent-level `downloadDir`; missing values fall back to `Unknown Path`.
 - Refresh timers are owned by Riverpod controllers and are cancelled on disposal or active-profile changes.
 - Grouping, sorting, filter, theme, refresh interval, and collapse preferences are persisted locally.
-- Launcher icons are generated from `icon.png` via [generate_launcher_icons.ps1](/Users/dwiprawira/Development/SourceCode/Flutter/transpilot/tooling/generate_launcher_icons.ps1) or [generate_launcher_icons.sh](/Users/dwiprawira/Development/SourceCode/Flutter/transpilot/tooling/generate_launcher_icons.sh).
+- Launcher icons are generated from `icon.png` via [generate_launcher_icons.ps1](tooling/generate_launcher_icons.ps1) or [generate_launcher_icons.sh](tooling/generate_launcher_icons.sh).
 
 ## 📊 Current Status
 

@@ -18,7 +18,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final width = MediaQuery.sizeOf(context).width;
     final preferences =
-        ref.watch(preferencesControllerProvider).valueOrNull ??
+        ref.watch(preferencesControllerProvider).value ??
         AppPreferences.defaults();
     final dashboard = ref.watch(dashboardControllerProvider);
 
@@ -92,8 +92,7 @@ class SettingsScreen extends ConsumerWidget {
                   const EmptyState(
                     icon: Icons.dns_rounded,
                     title: 'No active server',
-                    message:
-                        'Select a server profile to edit live Transmission session settings.',
+                    message: 'Select a server profile to edit live Transmission session settings.',
                   )
                 else
                   SectionCard(

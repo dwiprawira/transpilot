@@ -29,7 +29,7 @@ class TorrentDetailsView extends ConsumerWidget {
       ref.watch(torrentListControllerProvider).torrents,
       torrentId,
     );
-    final resolvedTorrent = detailAsync.valueOrNull ?? fallbackTorrent;
+    final resolvedTorrent = detailAsync.value ?? fallbackTorrent;
 
     if (resolvedTorrent == null) {
       return detailAsync.when(
@@ -198,10 +198,8 @@ class _TorrentOverviewCard extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 torrent.name,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  height: 1.1,
-                ),
+                style: Theme.of(context).textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w800, height: 1.1),
               ),
             ],
             if (torrent.downloadDir != null &&
@@ -219,9 +217,8 @@ class _TorrentOverviewCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       torrent.downloadDir!,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                   ),
                 ],
@@ -244,9 +241,8 @@ class _TorrentOverviewCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   Formatters.percentage(torrent.effectiveProgress),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ],
             ),
@@ -330,9 +326,8 @@ class _MetricTile extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               value,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
           ],
         ),
@@ -374,10 +369,8 @@ class _InlineBadge extends StatelessWidget {
               ],
               Text(
                 label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(context).textTheme.labelMedium
+                    ?.copyWith(color: foreground, fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -425,9 +418,8 @@ class _ExpandableSectionState extends State<_ExpandableSection> {
           childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
           title: Text(
             widget.title,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
           subtitle: widget.subtitle == null ? null : Text(widget.subtitle!),
           children: _expanded ? [widget.child] : const <Widget>[],
@@ -1090,15 +1082,13 @@ Future<bool> _runTorrentAction(
     if (!context.mounted) {
       return false;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Action completed.')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Action completed.')));
     return true;
   } catch (error) {
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$error')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$error')));
     }
     return false;
   }

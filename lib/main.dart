@@ -9,9 +9,7 @@ import 'presentation/app/transpilot_app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final sharedPreferences = await SharedPreferences.getInstance();
-  const secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  const secureStorage = FlutterSecureStorage(aOptions: AndroidOptions());
 
   runApp(
     ProviderScope(

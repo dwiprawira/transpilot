@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../domain/entities/torrent.dart';
 import '../../domain/repositories/transmission_repository.dart';
@@ -15,7 +16,7 @@ class TorrentDetailController extends StateNotifier<AsyncValue<Torrent?>> {
   TransmissionRepository? get _repository {
     final active = ref
         .read(profilesControllerProvider)
-        .valueOrNull
+        .value
         ?.activeProfile;
     if (active == null) {
       return null;
@@ -58,7 +59,7 @@ class TorrentFilesController
   TransmissionRepository? get _repository {
     final active = ref
         .read(profilesControllerProvider)
-        .valueOrNull
+        .value
         ?.activeProfile;
     if (active == null) {
       return null;
@@ -99,7 +100,7 @@ class TorrentPeersController
   TransmissionRepository? get _repository {
     final active = ref
         .read(profilesControllerProvider)
-        .valueOrNull
+        .value
         ?.activeProfile;
     if (active == null) {
       return null;

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../domain/entities/app_preferences.dart';
 import '../../domain/entities/server_profile.dart';
@@ -178,7 +179,7 @@ class TorrentListController extends StateNotifier<TorrentListState> {
   TransmissionRepository? get _repository {
     final active = ref
         .read(profilesControllerProvider)
-        .valueOrNull
+        .value
         ?.activeProfile;
     if (active == null) {
       return null;
@@ -230,7 +231,7 @@ class TorrentListController extends StateNotifier<TorrentListState> {
 
   Future<void> setGroupingMode(TorrentGroupingMode value) async {
     final preferences =
-        ref.read(preferencesControllerProvider).valueOrNull ??
+        ref.read(preferencesControllerProvider).value ??
         AppPreferences.defaults();
     await ref
         .read(preferencesControllerProvider.notifier)
@@ -306,11 +307,11 @@ final torrentListControllerProvider =
     StateNotifierProvider<TorrentListController, TorrentListState>((ref) {
       final controller = TorrentListController(ref);
       Future<void>.microtask(() {
-        final preferences = ref.read(preferencesControllerProvider).valueOrNull;
+        final preferences = ref.read(preferencesControllerProvider).value;
         if (preferences != null) {
           controller.applyPreferences(preferences);
         }
-        final profilesState = ref.read(profilesControllerProvider).valueOrNull;
+        final profilesState = ref.read(profilesControllerProvider).value;
         if (profilesState != null) {
           controller.handleProfilesChanged(profilesState);
         }
@@ -319,7 +320,7 @@ final torrentListControllerProvider =
         next.whenData(controller.applyPreferences);
       });
       ref.listen(profilesControllerProvider, (_, next) {
-        controller.handleProfilesChanged(next.valueOrNull);
+        controller.handleProfilesChanged(next.value);
       });
       return controller;
     });

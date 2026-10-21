@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -74,8 +72,7 @@ class TorrentsScreen extends ConsumerWidget {
               ? const EmptyState(
                   icon: Icons.info_outline_rounded,
                   title: 'Select a torrent',
-                  message:
-                      'The detail pane will show files, trackers, peers, and actions.',
+                  message: 'The detail pane will show files, trackers, peers, and actions.',
                 )
               : TorrentDetailsView(torrentId: state.selectedTorrentId!),
         ),
@@ -217,9 +214,8 @@ class _TorrentList extends ConsumerWidget {
             padding: const EdgeInsets.only(bottom: 10),
             child: Text(
               'Last sync ${Formatters.dateTime(state.lastUpdated)}',
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
         for (final group in groups) ...[
@@ -292,9 +288,8 @@ class _GroupHeader extends StatelessWidget {
                     '${group.torrents.length} torrents • ${Formatters.bytes(group.totalSize)} • ↓ ${Formatters.speed(group.totalDownloadSpeed)} • ↑ ${Formatters.speed(group.totalUploadSpeed)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.labelSmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -712,14 +707,12 @@ class _SummaryChip extends StatelessWidget {
       avatar: Icon(icon, size: 14),
       label: Text(
         label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(fontWeight: FontWeight.w700),
       ),
       side: BorderSide(
-        color: Theme.of(
-          context,
-        ).colorScheme.outlineVariant.withValues(alpha: 0.4),
+        color: Theme.of(context).colorScheme.outlineVariant
+            .withValues(alpha: 0.4),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -794,9 +787,8 @@ Future<void> _openSortSheet(BuildContext context) {
               children: [
                 Text(
                   'Sort Torrents',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 12),
                 ...TorrentSortField.values.map(
@@ -853,9 +845,8 @@ Future<void> _showChoiceSheet<T>(
           children: [
             Text(
               title,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+              style: Theme.of(context).textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
             ...items.map(
@@ -1068,29 +1059,21 @@ class _AddTorrentFormState extends ConsumerState<AddTorrentForm> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      allowMultiple: false,
-      withData: true,
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: const ['torrent'],
     );
-    final file = result?.files.singleOrNull;
     if (file == null) {
       return;
     }
-    List<int>? bytes = file.bytes;
-    if (bytes == null && file.path != null) {
-      bytes = await File(file.path!).readAsBytes();
-    }
+    final bytes = await file.readAsBytes();
     if (!mounted) {
       return;
     }
     setState(() {
       _metainfo = bytes;
       _fileName = file.name;
-      if (bytes != null) {
-        _magnetController.clear();
-      }
+      _magnetController.clear();
     });
   }
 
@@ -1115,16 +1098,14 @@ class _AddTorrentFormState extends ConsumerState<AddTorrentForm> {
         );
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Torrent added.')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Torrent added.')));
         Navigator.of(context).maybePop();
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$error')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$error')));
       }
     } finally {
       if (mounted) {
